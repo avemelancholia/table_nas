@@ -11,13 +11,13 @@ RUN apt-get update && apt-get install wget vim git -y && apt-get update &&  \
 ENV PATH /opt/conda/bin:$PATH
 WORKDIR /home/
 RUN pip install torch==1.9.0+cu111 torchvision==0.10.0+cu111 torchaudio==0.9.0 -f https://download.pytorch.org/whl/torch_stable.html && \
-        pip install notebook
+        pip install notebook 
 RUN git clone https://github.com/automl/NASLib.git naslib && \
         cd naslib && \
         pip install --upgrade pip setuptools wheel && \
         pip install -e .
 
 
-CMD ["jupyter", "notebook", "--ip=0.0.0.0",  "--port=8993", "--allow-root", "--no-browser", "--NotebookApp.token=''",  "--NotebookApp.password=''"]
+CMD ["jupyter", "notebook", "--ip=0.0.0.0",  "--port=8899", "--allow-root", "--no-browser", "--NotebookApp.token=''",  "--NotebookApp.password=''"]
 
 

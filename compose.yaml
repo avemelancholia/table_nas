@@ -7,7 +7,8 @@ services:
     ports:
       - "8899:8899"
     volumes:
-      - "/mnt/:/mnt"
+      - "/mnt/v/files/data:/home/data" # dataset
+      - "/mnt/v/experiments/table_nas/:/home/table_nas" # lib dir 
     shm_size: '64gb'
     deploy: 
       resources:
