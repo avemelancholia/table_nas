@@ -18,5 +18,5 @@ services:
               device_ids: ['0']
               capabilities: [gpu]
         limits:
-          cpus: '4.0'
+          cpus: '16.0'
           memory: 120G

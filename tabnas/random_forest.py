@@ -52,7 +52,9 @@ if __name__ == "__main__":
     data_root = Path(config.data)
     for dataset in datasets:
         x_train, y_train, x_test, y_test = get_numpys(data_root, dataset)
-        model = RandomForestClassifier(n_estimators=1000, max_depth=15)
+        model = RandomForestClassifier(
+            n_estimators=1000, max_depth=15, random_state=config.seed
+        )
         model.fit(x_train, y_train)
         y_pred = model.predict(x_test)
         metrics[dataset] = calculate_metrics(y_pred, y_test)

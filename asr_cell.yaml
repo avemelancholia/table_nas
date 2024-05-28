@@ -6,7 +6,7 @@ optimizer: oneshot
 search_space: darts
 dataset: tabular
 data: /home/data
-save: /home/experiments/
+save: /home/experiments/asr_cell
 out_dir: run
 save_arch_weights: True
 
@@ -18,9 +18,9 @@ fidelity_list: [5]
 fidelity_single: 5
 
 search:
-  seed: 0
+  seed: 100
   checkpoint_freq: 100
-  epochs: 100
+  epochs: 200
   fidelity: -1
 
   # GDAS
@@ -50,9 +50,9 @@ search:
 
 
   # additional params
-  batch_size: 2048
+  batch_size: 16384
   learning_rate: 0.025
-  learning_rate_min: 0.0001
+  learning_rate_min: 0.001
   momentum: 0.9
   weight_decay: 0.0003
   warm_start_epochs: 0
@@ -66,19 +66,19 @@ search:
   drop_path_prob: 0.0
 
   unrolled: False
-  arch_learning_rate: 0.0003
+  arch_learning_rate: 0.05
   arch_weight_decay: 0.001
   output_weights: True
   
 
 evaluation:
   checkpoint_freq: 100
-  batch_size: 2048
+  batch_size: 16384
   learning_rate: 0.025
-  learning_rate_min: 0.00
+  learning_rate_min: 0.001
   momentum: 0.9
   weight_decay: 0.0003
-  epochs: 100
+  epochs: 200
   warm_start_epochs: 0
   grad_clip: 5
   train_portion: 1.

@@ -1,6 +1,7 @@
 import logging
 import numpy as np
 import os
+import shutil
 import pickle
 import copy
 import random
@@ -56,7 +57,8 @@ class TabNasTrainer(Trainer):
             self.val_top1.update(prec1.data.item(), n)
             self.val_top5.update(prec5.data.item(), n)
         else:
-            raise ValueError("Unknown split: {}. Expected either 'train' or 'val'")
+            raise ValueError(
+                "Unknown split: {}. Expected either 'train' or 'val'")
 
     def evaluate(
         self,
@@ -107,7 +109,8 @@ class TabNasTrainer(Trainer):
                     self.test_queue,
                 ) = self.build_eval_dataloaders(self.config)
 
-                optim = self.build_eval_optimizer(best_arch.parameters(), self.config)
+                optim = self.build_eval_optimizer(
+                    best_arch.parameters(), self.config)
                 scheduler = self.build_eval_scheduler(optim, self.config)
 
                 start_epoch = self._setup_checkpointers(
@@ -144,7 +147,8 @@ class TabNasTrainer(Trainer):
                     if torch.cuda.is_available():
                         log_first_n(
                             logging.INFO,
-                            "cuda consumption\n {}".format(torch.cuda.memory_summary()),
+                            "cuda consumption\n {}".format(
+                                torch.cuda.memory_summary()),
                             n=20,
                         )
 
@@ -161,7 +165,8 @@ class TabNasTrainer(Trainer):
                     # Train queue
                     for i, (input_train, target_train) in enumerate(self.train_queue):
                         input_train = input_train.to(self.device)
-                        target_train = target_train.to(self.device, non_blocking=True)
+                        target_train = target_train.to(
+                            self.device, non_blocking=True)
 
                         optim.zero_grad()
                         logits_train = best_arch(input_train)
@@ -169,7 +174,8 @@ class TabNasTrainer(Trainer):
                         if hasattr(
                             best_arch, "auxilary_logits"
                         ):  # darts specific stuff
-                            log_first_n(logging.INFO, "Auxiliary is used", n=10)
+                            log_first_n(
+                                logging.INFO, "Auxiliary is used", n=10)
                             auxiliary_loss = loss(
                                 best_arch.auxilary_logits(), target_train
                             )
@@ -183,7 +189,8 @@ class TabNasTrainer(Trainer):
                             )
                         optim.step()
 
-                        self._store_accuracies(logits_train, target_train, "train")
+                        self._store_accuracies(
+                            logits_train, target_train, "train")
                         log_every_n_seconds(
                             logging.INFO,
                             "Epoch {}-{}, Train loss: {:.5}, learning rate: {}".format(
@@ -237,13 +244,15 @@ class TabNasTrainer(Trainer):
                 with torch.no_grad():
                     logits = best_arch(input_test)
 
-                    prec1, prec5 = utils.accuracy(logits, target_test, topk=(1, 1))
+                    prec1, prec5 = utils.accuracy(
+                        logits, target_test, topk=(1, 1))
                     top1.update(prec1.data.item(), n)
                     top5.update(prec5.data.item(), n)
 
                 log_every_n_seconds(
                     logging.INFO,
-                    "Inference batch {} of {}.".format(i, len(self.test_queue)),
+                    "Inference batch {} of {}.".format(
+                        i, len(self.test_queue)),
                     n=5,
                 )
 
@@ -272,7 +281,8 @@ class DropPathWrapper(AbstractPrimitive):
     def __init__(self, op, device="cuda:0"):
         super().__init__(locals())
         self.op = op
-        self.device = torch.device(device if torch.cuda.is_available() else "cpu")
+        self.device = torch.device(
+            device if torch.cuda.is_available() else "cpu")
 
     def forward(self, x, edge_data):
         x = self.op(x, edge_data)
@@ -374,7 +384,8 @@ class TabNasSearchSpace(Graph):
 
         for node in range(2, n + 2):
             block.add_node(
-                node, subgraph=cell.copy().set_scope(scope).set_input([node - 1])
+                node, subgraph=cell.copy().set_scope(
+                    scope).set_input([node - 1])
             )
 
         for node in range(1, n + 2):
@@ -543,11 +554,10 @@ def _set_cell_edge_ops(edge, filters, use_norm):
         edge.data.set(
             "op",
             [
-                LinearOP(filters, filters, dropout_rate=DROPOUT_RATE),
                 core_ops.Zero(stride=1),
-                ResBlockLinearOP(filters, dropout_rate=DROPOUT_RATE),
-                LinearBottleneckOP(filters, filters * 2, dropout_rate=DROPOUT_RATE),
                 TransformerOP(filters, dropout_rate=DROPOUT_RATE),
+                LinearBottleneckOP(filters, filters * 2,
+                                   dropout_rate=DROPOUT_RATE),
             ],
         )
     elif edge.tail % 2 == 0:  # Edge to intermediate node. Should always be Identity.
@@ -558,12 +568,21 @@ def _set_cell_edge_ops(edge, filters, use_norm):
 
 if __name__ == "__main__":
     datasets = Path("/home/data")
-    OP_NAMES = ["linear", "zero", "resblock", "linear_bottleneck", "transformer"]
+    OP_NAMES = ["zero", "transformer", "linear_bottleneck"]
 
-    with open("/home/table_nas/darts_cell.yaml") as f:
+    with open("/home/table_nas/transformer.yaml") as f:
         config = CfgNode.load_cfg(f)
 
-    torch.manual_seed(config.seed)
+    out_dir = Path(config.save)
+
+    if out_dir.exists():
+        shutil.rmtree(out_dir)
+
+    os.mkdir(out_dir)
+    os.mkdir(out_dir / "search")
+    os.mkdir(out_dir / "eval")
+
+    set_seed(config.seed)
 
     DROPOUT_RATE = config.dropout_rate
     NUM_FILTERS = config.num_filters
@@ -585,7 +604,8 @@ if __name__ == "__main__":
             )
 
             search_space = TabNasSearchSpace()
-            log_path = Path(config.save) / f"darts_{name_opt}_{dataset_name}.log"
+            log_path = Path(config.save) / \
+                f"darts_tf_{name_opt}_{dataset_name}.log"
 
             if log_path.exists():
                 os.remove(log_path)
@@ -601,7 +621,9 @@ if __name__ == "__main__":
             trainer.search()
             trainer.evaluate()
 
-            results = parse_log(config.save + f"darts_{name_opt}_{dataset_name}.log")
+            results = parse_log(
+                Path(config.save) / f"darts_tf_{name_opt}_{dataset_name}.log"
+            )
 
             metrics[f"{name_opt}_{dataset_name}"] = results
 

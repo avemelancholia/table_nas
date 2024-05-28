@@ -4,6 +4,7 @@ import os
 import pickle
 import copy
 import random
+import shutil
 import torch
 from fvcore.common.config import CfgNode
 from pathlib import Path
@@ -563,14 +564,23 @@ if __name__ == "__main__":
     datasets = Path("/home/data")
     OP_NAMES = ["linear", "zero", "resblock", "linear_bottleneck"]
 
-    with open("/home/table_nas/darts_cell.yaml") as f:
+    with open("/home/table_nas/asr_cell.yaml") as f:
         config = CfgNode.load_cfg(f)
 
-    torch.manual_seed(config.seed)
+    out_dir = Path(config.save)
+    if out_dir.exists():
+        shutil.rmtree(out_dir)
+
+    os.mkdir(out_dir)
+    os.mkdir(out_dir / "search")
+    os.mkdir(out_dir / "eval")
+
+    set_seed(config.seed)
 
     DROPOUT_RATE = config.dropout_rate
     NUM_FILTERS = config.num_filters
     NUM_BLOCKS = config.num_blocks
+    DEVICE = "cuda:0"
     metrics = {}
     opts = (
         ("darts", DARTSOptimizer),
@@ -579,7 +589,7 @@ if __name__ == "__main__":
         ("drnaso", DrNASOptimizer),
     )
     for name_opt, opt_class in opts:
-        for dataset_name in ["covtype", "higgs-small", "otto", "adult", "churn"]:
+        for dataset_name in ["higgs-small", "otto", "adult", "churn"]:
             ds_train = TabNasTorchDataset(datasets, dataset_name, "train")
             ds_test = TabNasTorchDataset(datasets, dataset_name, "test")
             NUM_FEATURES = ds_train.num_features
@@ -599,21 +609,22 @@ if __name__ == "__main__":
                 os.remove(log_path)
 
             logger = setup_logger(str(log_path))
-            print(log_path)
             logger.setLevel(logging.INFO)
 
             optimizer = opt_class(**config.search)
+            optimizer.device = DEVICE
             optimizer.adapt_search_space(search_space, config.dataset)
 
             trainer = TabNasTrainer(optimizer, config)
+            trainer.device = DEVICE
             trainer.search()
             trainer.evaluate()
 
-            results = parse_log(config.save + f"darts_{name_opt}_{dataset_name}.log")
+            results = parse_log(
+                Path(config.save) / f"darts_{name_opt}_{dataset_name}.log"
+            )
 
             metrics[f"{name_opt}_{dataset_name}"] = results
-
-            print(results)
 
             handlers = logger.handlers[:]
             for handler in handlers:

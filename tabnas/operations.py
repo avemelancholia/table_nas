@@ -22,17 +22,21 @@ class TransformerOP(ASRPrimitive):
         self.tf_layer = nn.Transformer(
             d_model=filters,
             nhead=4,
+            num_encoder_layers=1,
             num_decoder_layers=1,
-            num_decoder_layer=1,
             dim_feedforward=filters,
             dropout=dropout_rate,
             batch_first=True,
         )
+        # self.tf_layer = nn.TransformerEncoderLayer(filters, 4, filters)
 
     def forward(self, x, edge_data=None):
         out = x.unsqueeze(1)
-        out = self.tf_layer(out)
+        out = self.tf_layer(out, out)
         out = out.mean(1)
+        out = torch.clamp_max_(out, 20)
+        # print(torch.mean(out))
+
         return out
 
 
