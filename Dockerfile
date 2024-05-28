@@ -17,7 +17,7 @@ RUN git clone https://github.com/automl/NASLib.git naslib && \
         cd naslib && \
         pip install --upgrade pip setuptools wheel && \
         pip install -e . && \
-        mkdir /home/experiments/
+        mkdir /home/experiments/ && mkdir /home/experiments/search && mkdir /home/experiments/eval
 
 
 CMD ["jupyter", "notebook", "--ip=0.0.0.0",  "--port=8899", "--allow-root", "--no-browser", "--NotebookApp.token=''",  "--NotebookApp.password=''"]

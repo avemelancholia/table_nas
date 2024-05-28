@@ -1,5 +1,5 @@
 import numpy as np
-import json
+import pickle
 from pathlib import Path
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import balanced_accuracy_score, accuracy_score
@@ -45,14 +45,14 @@ def calculate_metrics(pred, gt):
 
 
 if __name__ == "__main__":
-    with open("/home/table_nas/config.yaml") as f:
+    with open("/home/table_nas/rf.yaml") as f:
         config = CfgNode.load_cfg(f)
 
     metrics = {}
     data_root = Path(config.data)
     for dataset in datasets:
         x_train, y_train, x_test, y_test = get_numpys(data_root, dataset)
-        model = RandomForestClassifier(n_estimators=500, max_depth=15)
+        model = RandomForestClassifier(n_estimators=1000, max_depth=15)
         model.fit(x_train, y_train)
         y_pred = model.predict(x_test)
         metrics[dataset] = calculate_metrics(y_pred, y_test)
@@ -61,5 +61,5 @@ if __name__ == "__main__":
 
     out_dir = Path(config.save)
 
-    with open("/out_dir/experiment_1.json", "w") as outfile:
-        json.dump(metrics, outfile)
+    with open("/home/experiments/random_forest.pickle", "wb") as outfile:
+        pickle.dump(metrics, outfile)

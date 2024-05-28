@@ -1,5 +1,7 @@
-from torch.utils.data import Dataset
 import numpy as np
+from torch.utils.data import Dataset
+from torchvision.transforms import Compose, ToTensor
+from naslib.utils.custom_dataset import CustomDataset
 
 
 class TabNasTorchDataset(Dataset):
@@ -56,3 +58,19 @@ class TabNasTorchDataset(Dataset):
 
     def __len__(self):
         return len(self.x)
+
+
+class TabNasDataset(CustomDataset):
+    def __init__(self, config, ds_train, ds_test, mode="train"):
+        super().__init__(config, mode)
+        self.ds_train = ds_train
+        self.ds_test = ds_test
+
+    def get_transforms(self, config):
+        return Compose([ToTensor()]), Compose([ToTensor()])
+
+    def get_data(self, data, train_transform, valid_transform):
+        train_data = self.ds_train
+        test_data = self.ds_test
+
+        return train_data, test_data

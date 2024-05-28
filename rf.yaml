@@ -1,0 +1,14 @@
+seed: 0
+dropout_rate: 0.0
+num_filters: 32
+num_blocks: 4
+optimizer: oneshot
+search_space: darts
+dataset: tabular
+data: /home/data
+save: /home/experiments/
+out_dir: run
+save_arch_weights: True
+
+experiment_type: single
+predictor: oneshot

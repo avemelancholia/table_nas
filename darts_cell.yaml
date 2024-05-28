@@ -1,0 +1,91 @@
+seed: 0
+dropout_rate: 0.0
+num_filters: 32
+num_blocks: 4
+optimizer: oneshot
+search_space: darts
+dataset: tabular
+data: /home/data
+save: /home/experiments/
+out_dir: run
+save_arch_weights: True
+
+experiment_type: single
+predictor: oneshot
+train_size_list: [8, 12]
+train_size_single: 2
+fidelity_list: [5]
+fidelity_single: 5
+
+search:
+  seed: 100
+  checkpoint_freq: 100
+  epochs: 100
+  fidelity: -1
+
+  # GDAS
+  tau_max: 10
+  tau_min: 0.1
+
+  # RE
+  sample_size: 10
+  population_size: 30
+  
+  # LS
+  num_init: 10
+  
+  # BANANAS
+  k: 10
+  num_ensemble: 3
+  acq_fn_type: its
+  acq_fn_optimization: mutation
+  encoding_type: path
+  num_arches_to_mutate: 2
+  max_mutations: 1
+  num_candidates: 100
+  
+  # BP
+  predictor_type: oneshot
+  debug_predictor: False
+
+
+  # additional params
+  batch_size: 2048
+  learning_rate: 0.05
+  learning_rate_min: 0.0005
+  momentum: 0.9
+  weight_decay: 0.0003
+  warm_start_epochs: 0
+  grad_clip: 5
+  train_portion: 0.9
+  data_size: 25000
+
+  cutout: False
+  cutout_length: 16
+  cutout_prob: 1.0
+  drop_path_prob: 0.0
+
+  unrolled: False
+  arch_learning_rate: 0.0003
+  arch_weight_decay: 0.001
+  output_weights: True
+  
+
+evaluation:
+  checkpoint_freq: 100
+  batch_size: 2048
+  learning_rate: 0.05
+  learning_rate_min: 0.0005
+  momentum: 0.9
+  weight_decay: 0.0003
+  epochs: 100
+  warm_start_epochs: 0
+  grad_clip: 5
+  train_portion: 1.
+  data_size: 50000
+
+  cutout: True
+  cutout_length: 16
+  cutout_prob: 1.0
+  drop_path_prob: 0.2
+  auxiliary_weight: 0.4
