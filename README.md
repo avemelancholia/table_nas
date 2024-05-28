@@ -23,3 +23,11 @@ Write mounts pointing to cloned repo and downloaded datasets in compose.yaml
 
 `docker compose up -d`
 
+`docker exec -it <container_name> bash`
+
+`cd /home/table_nas`
+
+Here you run all experiments, described in the report, via bash experiments/run_experiment_n.sh
+
+Outputs will be in the directory /home/experiments
+
